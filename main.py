@@ -23,8 +23,8 @@ class SNAKE:
 		self.body_tr = pygame.image.load('images/body_tr.png').convert_alpha()
 		self.body_tl = pygame.image.load('images/body_tl.png').convert_alpha()
 		self.body_br = pygame.image.load('images/body_br.png').convert_alpha()
-		self.body_bl = pygame.image.load('son/body_bl.png').convert_alpha()
-		self.crunch_sound = pygame.mixer.Sound('Sound/crunch.wav')
+		self.body_bl = pygame.image.load('images/body_bl.png').convert_alpha()
+		self.crunch_sound = pygame.mixer.Sound('son/crunch.wav')
 
 	def draw_snake(self):
 		self.update_head_graphics()
@@ -177,7 +177,7 @@ cell_size = 40
 cell_number = 20
 screen = pygame.display.set_mode((cell_number * cell_size,cell_number * cell_size))
 clock = pygame.time.Clock()
-apple = pygame.image.load('Graphics/apple.png').convert_alpha()
+apple = pygame.image.load('images/apple.png').convert_alpha()
 game_font = pygame.font.Font('Font/PoetsenOne-Regular.ttf', 25)
 
 SCREEN_UPDATE = pygame.USEREVENT
