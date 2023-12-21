@@ -33,12 +33,12 @@ class GameModeSelector:
     def draw_selector(self):
         screen.fill((175, 215, 70))
 
-        # Utiliser la nouvelle police pour le titre
+        # Utilise la nouvelle police pour le titre
         title_text = self.title_font.render("Snake", True, (0, 0, 0))
         title_rect = title_text.get_rect(center=(screen.get_width() // 2, 50))
         screen.blit(title_text, title_rect)
 
-        # Créer des rectangles avec un fond vert foncé et un espace entre eux
+        # Rectangles avec un fond vert foncé et un espace entre eux
         rect_width, rect_height = 500, 50
         space_between_rects = 20
         border_radius = 10  
@@ -48,7 +48,7 @@ class GameModeSelector:
         pygame.draw.rect(screen, (56, 74, 12), solo_rect, border_radius=border_radius)
         pygame.draw.rect(screen, (56, 74, 12), ai_rect, border_radius=border_radius)
 
-        # Afficher le texte sur les rectangles
+        # Affiche le texte sur les rectangles
         text_solo = self.font.render("Appuyez sur 's' pour jouer seul", True, (255, 255, 255))
         text_ia = self.font.render("Appuyez sur 'i' pour l'IA", True, (255, 255, 255))
 
@@ -132,8 +132,10 @@ class Snake:
         elif previous.x == 1 and next.y == 1 or previous.y == 1 and next.x == 1:
             screen.blit(self.body_br, block_rect)
 
+# Gestion de la direction du serpent
+
     def move_snake(self):
-        self.control()  # Gestion de la direction du serpent
+        self.control()
         if self.new_block:
             body_copy = self.body[:]
             body_copy.insert(0, body_copy[0] + self.direction)
@@ -279,7 +281,7 @@ while True:
             sys.exit()
 
         if mode_selector.selected_mode == "Solo":
-            # Gestion des événements du clavier pour le mode "Solo"
+            # Gestion des touches du clavier pour le mode "Solo"
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     main_game.snake.direction = Vector2(0, -1)
