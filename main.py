@@ -26,9 +26,9 @@ class SNAKE:
 		self.body_bl = pygame.image.load('images/body_bl.png').convert_alpha()
 		self.crunch_sound = pygame.mixer.Sound('son/crunch.wav')
 
-	def draw_snake(self):
-		self.update_head_graphics()
-		self.update_tail_graphics()
+	def Dessin_Serpent(self):
+		self.Graphisme_Tete()
+		self.Graphisme_Queue()
 
 		for index,block in enumerate(self.body):
 			x_pos = int(block.x * cell_size)
@@ -56,21 +56,21 @@ class SNAKE:
 					elif previous_block.x == 1 and next_block.y == 1 or previous_block.y == 1 and next_block.x == 1:
 						screen.blit(self.body_br,block_rect)
 
-	def update_head_graphics(self):
+	def Graphisme_Tete(self):
 		head_relation = self.body[1] - self.body[0]
 		if head_relation == Vector2(1,0): self.head = self.head_left
 		elif head_relation == Vector2(-1,0): self.head = self.head_right
 		elif head_relation == Vector2(0,1): self.head = self.head_up
 		elif head_relation == Vector2(0,-1): self.head = self.head_down
 
-	def update_tail_graphics(self):
+	def Graphisme_Queue(self):
 		tail_relation = self.body[-2] - self.body[-1]
 		if tail_relation == Vector2(1,0): self.tail = self.tail_left
 		elif tail_relation == Vector2(-1,0): self.tail = self.tail_right
 		elif tail_relation == Vector2(0,1): self.tail = self.tail_up
 		elif tail_relation == Vector2(0,-1): self.tail = self.tail_down
 
-	def move_snake(self):
+	def Mouvement_Serpent(self):
 		if self.new_block == True:
 			body_copy = self.body[:]
 			body_copy.insert(0,body_copy[0] + self.direction)
@@ -96,11 +96,10 @@ class FRUIT:
 	def __init__(self):
 		self.randomize()
 
-	def draw_fruit(self):
+	def dessin_fruit(self):
 		fruit_rect = pygame.Rect(int(self.pos.x * cell_size),int(self.pos.y * cell_size),cell_size,cell_size)
 		screen.blit(apple,fruit_rect)
-		#pygame.draw.rect(screen,(126,166,114),fruit_rect)
-
+		
 	def randomize(self):
 		self.x = random.randint(0,cell_number - 1)
 		self.y = random.randint(0,cell_number - 1)
@@ -112,15 +111,15 @@ class MAIN:
 		self.fruit = FRUIT()
 
 	def update(self):
-		self.snake.move_snake()
+		self.snake.Mouvement_Serpent()
 		self.check_collision()
 		self.check_fail()
 
-	def draw_elements(self):
+	def dessin_objects(self):
 		self.draw_grass()
-		self.fruit.draw_fruit()
-		self.snake.draw_snake()
-		self.draw_score()
+		self.fruit.dessin_fruit()
+		self.snake.Dessin_Serpent()
+		self.dessin_score()
 
 	def check_collision(self):
 		if self.fruit.pos == self.snake.body[0]:
@@ -157,7 +156,7 @@ class MAIN:
 						grass_rect = pygame.Rect(col * cell_size,row * cell_size,cell_size,cell_size)
 						pygame.draw.rect(screen,grass_color,grass_rect)			
 
-	def draw_score(self):
+	def dessin_score(self):
 		score_text = str(len(self.snake.body) - 3)
 		score_surface = game_font.render(score_text,True,(56,74,12))
 		score_x = int(cell_size * cell_number - 60)
@@ -207,6 +206,6 @@ while True:
 					main_game.snake.direction = Vector2(-1,0)
 
 	screen.fill((175,215,70))
-	main_game.draw_elements()
+	main_game.dessin_objects()
 	pygame.display.update()
 	clock.tick(60)
