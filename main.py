@@ -8,6 +8,7 @@ from ia import IA
 
 class GameModeSelector:
     def __init__(self):
+        self.directions = [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]
         self.selected_mode = None
         self.font = pygame.font.Font(None, 36)
         self.title_font = pygame.font.Font("Font/Outwrite.ttf", 50)
