@@ -1,45 +1,75 @@
 from pygame.math import Vector2
-import random
+import heapq, random
+
+class Node:
+    def __init__(self, position, parent=None):
+        self.position = position
+        self.parent = parent
+        self.g = 0
+        self.h = 0
+
+    def __lt__(self, other):
+        return (self.g + self.h) < (other.g + other.h)
+
+    def __eq__(self, other):
+        return self.position == other.position
+
+    def __hash__(self):
+        return hash((self.position.x, self.position.y))
 
 class IA:
     def __init__(self):
         self.directions = [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]
 
     def get_next_move(self, snake, fruit):
-        # Direction de la tête du serpent vers la pomme
-        to_fruit = fruit.pos - snake.body[0]
-
-        # Direction en fonction de la position relative de la pomme
-        if to_fruit.x > 0:
-            next_direction = Vector2(1, 0)
-        elif to_fruit.x < 0:
-            next_direction = Vector2(-1, 0)
-        elif to_fruit.y > 0:
-            next_direction = Vector2(0, 1)
-        elif to_fruit.y < 0:
-            next_direction = Vector2(0, -1)
-        else:
-            # Si la tête est déjà sur la pomme, elle choisit la direction vers la pomme
-            next_direction = self.direction_towards_fruit(snake.body[0], fruit.pos)
-
-        # Vérifier que la direction choisie ne mène pas à la collision avec le corps
-        if self.is_valid_direction(snake, next_direction):
+        # Utiliser A* pour trouver le chemin le plus court vers la pomme
+        path = self.find_path(snake.body[0], fruit.pos, snake.body)
+        
+        # Choisir la prochaine direction en fonction du premier mouvement dans le chemin
+        if path and len(path) > 1:
+            next_direction = path[1] - path[0]
             return next_direction
-        else:
-            # Si la direction choisie mène à la collision, choisir une direction parmi celles valides ou la première direction
-            valid_directions = [d for d in self.directions if self.is_valid_direction(snake, d)]
-            return random.choice(valid_directions) if valid_directions else self.directions[0]
 
-    def is_valid_direction(self, snake, direction):
-        # Nouvelle direction ne mène pas à la collision avec le corps du serpent
-        next_head = snake.body[0] + direction
-        return next_head not in snake.body[1:]
+        # Si le chemin est vide ou n'a qu'un élément, choisir une direction aléatoire
+        return random.choice(self.directions)
 
-    def direction_towards_fruit(self, head, fruit_pos):
-        to_fruit = fruit_pos - head
+    def find_path(self, start, goal, obstacles):
+        open_set = []
+        closed_set = set()
 
-        # Choisir la direction en fonction de la position relative de la pomme
-        if abs(to_fruit.x) > abs(to_fruit.y):
-            return Vector2(1, 0) if to_fruit.x > 0 else Vector2(-1, 0)
-        else:
-            return Vector2(0, 1) if to_fruit.y > 0 else Vector2(0, -1)
+        start_node = Node(start)
+        goal_node = Node(goal)
+
+        heapq.heappush(open_set, start_node)
+
+        while open_set:
+            current_node = heapq.heappop(open_set)
+
+            if current_node.position == goal_node.position:
+                path = []
+                while current_node:
+                    path.append(current_node.position)
+                    current_node = current_node.parent
+                return path[::-1]  # Inverser le chemin pour obtenir le bon ordre
+
+            closed_set.add(current_node)
+
+            for direction in self.directions:
+                neighbor_position = current_node.position + direction
+                neighbor_node = Node(neighbor_position, current_node)
+
+                if (
+                    0 <= neighbor_position.x < 20
+                    and 0 <= neighbor_position.y < 20
+                    and neighbor_node not in closed_set
+                    and neighbor_position not in obstacles
+                ):
+                    neighbor_node.g = current_node.g + 1
+                    neighbor_node.h = abs(neighbor_node.position.x - goal_node.position.x) + abs(
+                        neighbor_node.position.y - goal_node.position.y
+                    )
+
+                    if neighbor_node not in open_set:
+                        heapq.heappush(open_set, neighbor_node)
+
+        return []
