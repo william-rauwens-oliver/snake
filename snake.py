@@ -26,6 +26,8 @@ class GameModeSelector:
                     elif event.key == pygame.K_i:
                         self.selected_mode = "IA"
                         return
+                    elif event.key == pygame.K_b:
+                        self.show_scores()
 
             self.draw_selector()
             pygame.display.flip()
@@ -58,7 +60,16 @@ class GameModeSelector:
         screen.blit(text_solo, solo_text_rect)
         screen.blit(text_ia, ai_text_rect)
 
+        # Ajoutez l'option pour afficher les scores
+        scores_text = self.font.render("Appuyez sur 'b' pour afficher les scores", True, (255, 255, 255))
+        scores_rect = scores_text.get_rect(center=(screen.get_width() // 2, screen.get_height() - 50))
+        screen.blit(scores_text, scores_rect)
+
         pygame.display.update()
+
+    def show_scores(self):
+        score_screen = ScoreScreen()
+        score_screen.run()
 class Snake:
     def __init__(self):
         self.body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
@@ -185,6 +196,7 @@ class MainGame:
         self.snake = Snake()
         self.fruit = Fruit()
         self.mode = mode
+        self.score = 0  # Nouvelle variable pour le score
         if self.mode == "IA":
             self.ai = IA()
 
@@ -207,10 +219,7 @@ class MainGame:
             self.fruit.randomize()
             self.snake.add_block()
             self.snake.play_crunch_sound()
-
-        for block in self.snake.body[1:]:
-            if block == self.fruit.pos:
-                self.fruit.randomize()
+            self.score += 1  # Incrémente le score
 
     def check_fail(self):
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
@@ -222,6 +231,11 @@ class MainGame:
 
     def game_over(self):
         self.snake.reset()
+        self.save_score()  # Enregistre le score dans le fichier "scores.txt"
+
+    def save_score(self):
+        with open('scores.txt', 'a') as file:
+            file.write(f'Score: {self.score}\n')
 
     def draw_grass(self):
         grass_color = (167, 209, 61)
@@ -251,6 +265,45 @@ class MainGame:
         screen.blit(score_surface, score_rect)
         screen.blit(apple, apple_rect)
         pygame.draw.rect(screen, (56, 74, 12), bg_rect, 2)
+
+class ScoreScreen:
+    def __init__(self):
+        self.font = pygame.font.Font(None, 36)
+        self.title_font = pygame.font.Font("Font/Outwrite.ttf", 50)
+
+    def run(self):
+        scores = self.load_scores()
+        self.draw_scores(scores)
+        while True:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    sys.exit()
+
+            pygame.display.flip()
+
+    def load_scores(self):
+        with open('scores.txt', 'r') as file:
+            scores = file.readlines()
+        return scores
+
+    def draw_scores(self, scores):
+        screen.fill((255, 255, 255))  # Fond blanc
+
+        # Titre
+        title_text = self.title_font.render("Scores", True, (0, 0, 0))
+        title_rect = title_text.get_rect(center=(screen.get_width() // 2, 50))
+        screen.blit(title_text, title_rect)
+
+        # Affichage des scores
+        y_position = 150
+        for score in scores:
+            score_text = self.font.render(score.strip(), True, (0, 0, 0))
+            score_rect = score_text.get_rect(center=(screen.get_width() // 2, y_position))
+            screen.blit(score_text, score_rect)
+            y_position += 40
+
+        pygame.display.flip()
 
 # Pygame initialization
 pygame.mixer.pre_init(44100, -16, 2, 512)
