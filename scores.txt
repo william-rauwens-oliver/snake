@@ -1,0 +1,2 @@
+Total Apples Eaten: 4
+Total Apples Eaten: 1
