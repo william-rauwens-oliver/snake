@@ -35,15 +35,23 @@ class GameModeSelector:
     def draw_selector(self):
         screen.fill((175, 215, 70))
 
-        # Utilise la nouvelle police pour le titre
+        # Utilise la nouvelle police pour le titre avec ombre blanche
         title_text = self.title_font.render("Snake", True, (0, 0, 0))
         title_rect = title_text.get_rect(center=(screen.get_width() // 2, 50))
+
+        # Ajout de l'ombre blanche
+        title_rect_shadow = title_rect.copy()
+        title_rect_shadow.x += 2
+        title_rect_shadow.y += 2
+        title_text_shadow = self.title_font.render("Snake", True, (255, 255, 255))
+
+        screen.blit(title_text_shadow, title_rect_shadow)
         screen.blit(title_text, title_rect)
 
         # Rectangles avec un fond vert foncé et un espace entre eux
         rect_width, rect_height = 500, 50
         space_between_rects = 20
-        border_radius = 10  
+        border_radius = 10
         solo_rect = pygame.Rect((screen.get_width() - rect_width) // 2, (screen.get_height() - rect_height) // 2 - 25, rect_width, rect_height)
         ai_rect = pygame.Rect((screen.get_width() - rect_width) // 2, (screen.get_height() - rect_height) // 2 + rect_height + space_between_rects, rect_width, rect_height)
 
@@ -60,9 +68,17 @@ class GameModeSelector:
         screen.blit(text_solo, solo_text_rect)
         screen.blit(text_ia, ai_text_rect)
 
-        # Ajoutez l'option pour afficher les scores
+        # Ajoutez l'option pour afficher les scores avec ombre noire
         scores_text = self.font.render("Appuyez sur 'b' pour afficher les scores", True, (255, 255, 255))
         scores_rect = scores_text.get_rect(center=(screen.get_width() // 2, screen.get_height() - 50))
+
+        # Ajout de l'ombre noire
+        scores_rect_shadow = scores_rect.copy()
+        scores_rect_shadow.x += 2
+        scores_rect_shadow.y += 2
+        scores_text_shadow = self.font.render("Appuyez sur 'b' pour afficher les scores", True, (0, 0, 0))
+
+        screen.blit(scores_text_shadow, scores_rect_shadow)
         screen.blit(scores_text, scores_rect)
 
         pygame.display.update()
@@ -70,6 +86,7 @@ class GameModeSelector:
     def show_scores(self):
         score_screen = ScoreScreen()
         score_screen.run()
+        
 class Snake:
     def __init__(self):
         self.body = [Vector2(5, 10), Vector2(4, 10), Vector2(3, 10)]
@@ -272,14 +289,31 @@ class ScoreScreen:
         self.font = pygame.font.Font(None, 36)
         self.title_font = pygame.font.Font("Font/Outwrite.ttf", 50)
         self.background = pygame.image.load("images/fond_scores.jpg").convert()
+        self.delete_button_rect = pygame.Rect((screen.get_width() // 2 + 150, screen.get_height() // 4, 200, 50))
+        self.delete_button_clicked = False
 
     def run(self):
         scores = self.load_scores()
+
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        return
+                    elif event.key == pygame.K_d:
+                        self.delete_scores()
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    if event.button == 1:  # Clic gauche
+                        if self.delete_button_rect.collidepoint(event.pos):
+                            self.delete_button_clicked = True
+                elif event.type == pygame.MOUSEBUTTONUP:
+                    if event.button == 1:
+                        if self.delete_button_clicked and self.delete_button_rect.collidepoint(event.pos):
+                            self.delete_scores()
+                            self.delete_button_clicked = False
 
             # Dessiner l'image de fond en premier
             screen.blit(self.background, (0, 0))
@@ -303,6 +337,12 @@ class ScoreScreen:
                 screen.blit(score_text, score_rect)
                 y_position += 40
 
+            # Ajouter le bouton "Delete Scores" à droite du titre "Scores"
+            delete_text = self.font.render("Delete Scores", True, (255, 255, 255))
+            pygame.draw.rect(screen, (56, 74, 12), self.delete_button_rect, border_radius=10)  # Vert foncé
+            delete_rect = delete_text.get_rect(center=self.delete_button_rect.center)
+            screen.blit(delete_text, delete_rect)
+
             pygame.display.flip()
 
     def load_scores(self):
@@ -310,24 +350,9 @@ class ScoreScreen:
             scores = file.readlines()
         return scores
 
-
-    def draw_scores(self, scores):
-        # Titre
-        title_text = self.title_font.render("Scores", True, (0, 0, 0))
-        title_rect = title_text.get_rect(center=(screen.get_width() // 2, 50))
-        screen.blit(title_text, title_rect)
-
-        # Affichage des scores
-        y_position = 150
-        for score in scores:
-            score_text = self.font.render(score.strip(), True, (0, 0, 0))
-            score_rect = score_text.get_rect(center=(screen.get_width() // 2, y_position))
-            screen.blit(score_text, score_rect)
-            y_position += 40
-
-        pygame.display.flip()
-
-
+    def delete_scores(self):
+        with open('scores.txt', 'w') as file:
+            file.write('')
 
 # Pygame initialization
 pygame.mixer.pre_init(44100, -16, 2, 512)
