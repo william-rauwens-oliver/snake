@@ -1,6 +1,2 @@
-Score: 12Score: 0
-Score: 0
-Score: 0
-Score: 0
-Score: 0
-Score: 0
+Total Apples Eaten: 4
+Total Apples Eaten: 1

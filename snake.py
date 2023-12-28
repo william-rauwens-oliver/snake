@@ -214,6 +214,7 @@ class MainGame:
         self.fruit = Fruit()
         self.mode = mode
         self.score = 0
+        self.total_apples_eaten = 0  # Nouvelle variable pour stocker le nombre total de pommes mangées
         if self.mode == "IA":
             self.ai = IA()
 
@@ -237,6 +238,7 @@ class MainGame:
             self.snake.add_block()
             self.snake.play_crunch_sound()
             self.score += 1
+            self.total_apples_eaten += 1  # Incrémente le nombre total de pommes mangées
 
     def check_fail(self):
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
@@ -250,10 +252,14 @@ class MainGame:
         self.save_score()
         self.snake.reset()
         self.score = 0
+        self.total_apples_eaten = 0  # Réinitialise le nombre total de pommes mangées
 
     def save_score(self):
-        with open('scores.txt', 'a') as file:
-            file.write(f'Score: {self.score}\n')
+        # Ajoutez une vérification pour éviter d'écrire un score de zéro
+        if self.total_apples_eaten > 0:
+            final_score_text = f'Total Apples Eaten: {self.total_apples_eaten}'
+            with open('scores.txt', 'a') as file:
+                file.write(f'{final_score_text}\n')
 
     def draw_grass(self):
         grass_color = (167, 209, 61)
