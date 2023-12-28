@@ -196,7 +196,7 @@ class MainGame:
         self.snake = Snake()
         self.fruit = Fruit()
         self.mode = mode
-        self.score = 0  # Nouvelle variable pour le score
+        self.score = 0
         if self.mode == "IA":
             self.ai = IA()
 
@@ -219,7 +219,7 @@ class MainGame:
             self.fruit.randomize()
             self.snake.add_block()
             self.snake.play_crunch_sound()
-            self.score += 1  # Incrémente le score
+            self.score += 1
 
     def check_fail(self):
         if not 0 <= self.snake.body[0].x < cell_number or not 0 <= self.snake.body[0].y < cell_number:
@@ -230,8 +230,9 @@ class MainGame:
                 self.game_over()
 
     def game_over(self):
-        self.snake.reset()
         self.save_score()
+        self.snake.reset()
+        self.score = 0
 
     def save_score(self):
         with open('scores.txt', 'a') as file:
@@ -252,7 +253,7 @@ class MainGame:
                         pygame.draw.rect(screen, grass_color, grass_rect)
 
     def draw_score(self):
-        score_text = str(len(self.snake.body) - 3)
+        score_text = str(self.score)
         score_surface = game_font.render(score_text, True, (56, 74, 12))
         score_x = int(cell_size * cell_number - 60)
         score_y = int(cell_size * cell_number - 40)
@@ -270,15 +271,37 @@ class ScoreScreen:
     def __init__(self):
         self.font = pygame.font.Font(None, 36)
         self.title_font = pygame.font.Font("Font/Outwrite.ttf", 50)
+        self.background = pygame.image.load("images/fond_scores.jpg").convert()
 
     def run(self):
         scores = self.load_scores()
-        self.draw_scores(scores)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     sys.exit()
+
+            # Dessiner l'image de fond en premier
+            screen.blit(self.background, (0, 0))
+
+            # Titre avec ombre
+            title_text = self.title_font.render("Scores :", True, (0, 128, 0))  # Vert foncé
+            title_rect = title_text.get_rect(center=(screen.get_width() // 2, screen.get_height() // 4))
+            title_shadow = self.title_font.render("Scores :", True, (0, 0, 0))  # Ombre noire
+            title_rect_shadow = title_shadow.get_rect(center=(title_rect.centerx + 2, title_rect.centery + 2))
+            screen.blit(title_shadow, title_rect_shadow)
+            screen.blit(title_text, title_rect)
+
+            # Affichage des scores en blanc avec ombre noire
+            y_position = screen.get_height() // 3
+            for score in scores:
+                score_text = self.font.render(score.strip(), True, (255, 255, 255))  # Blanc
+                score_rect = score_text.get_rect(center=(screen.get_width() // 2, y_position))
+                score_shadow = self.font.render(score.strip(), True, (0, 0, 0))  # Ombre noire
+                score_rect_shadow = score_shadow.get_rect(center=(score_rect.centerx + 2, score_rect.centery + 2))
+                screen.blit(score_shadow, score_rect_shadow)
+                screen.blit(score_text, score_rect)
+                y_position += 40
 
             pygame.display.flip()
 
@@ -287,9 +310,8 @@ class ScoreScreen:
             scores = file.readlines()
         return scores
 
-    def draw_scores(self, scores):
-        screen.fill((255, 255, 255))
 
+    def draw_scores(self, scores):
         # Titre
         title_text = self.title_font.render("Scores", True, (0, 0, 0))
         title_rect = title_text.get_rect(center=(screen.get_width() // 2, 50))
@@ -304,6 +326,8 @@ class ScoreScreen:
             y_position += 40
 
         pygame.display.flip()
+
+
 
 # Pygame initialization
 pygame.mixer.pre_init(44100, -16, 2, 512)
@@ -322,10 +346,7 @@ pygame.time.set_timer(SCREEN_UPDATE, 150)
 mode_selector = GameModeSelector()
 mode_selector.run()
 
-if mode_selector.selected_mode == "Solo":
-    main_game = MainGame("Solo")
-elif mode_selector.selected_mode == "IA":
-    main_game = MainGame("IA")
+main_game = None  # Initialiser main_game à None
 
 while True:
     for event in pygame.event.get():
@@ -335,19 +356,30 @@ while True:
 
         if mode_selector.selected_mode == "Solo":
             # Gestion des touches du clavier pour le mode "Solo"
-            if event.type == pygame.KEYDOWN:
+            if event.type == pygame.KEYDOWN and not main_game.snake.direction:
                 if event.key == pygame.K_UP:
+                    print("UP key pressed")
                     main_game.snake.direction = Vector2(0, -1)
                 elif event.key == pygame.K_DOWN:
+                    print("DOWN key pressed")
                     main_game.snake.direction = Vector2(0, 1)
                 elif event.key == pygame.K_LEFT:
+                    print("LEFT key pressed")
                     main_game.snake.direction = Vector2(-1, 0)
                 elif event.key == pygame.K_RIGHT:
+                    print("RIGHT key pressed")
                     main_game.snake.direction = Vector2(1, 0)
 
-    main_game.update()
+    if mode_selector.selected_mode:
+        if main_game is None:
+            if mode_selector.selected_mode == "Solo":
+                main_game = MainGame("Solo")
+            elif mode_selector.selected_mode == "IA":
+                main_game = MainGame("IA")
 
-    screen.fill((175, 215, 70))
-    main_game.draw_objects()
-    pygame.display.update()
-    clock.tick(10)
+        main_game.update()
+
+        screen.fill((175, 215, 70))
+        main_game.draw_objects()
+        pygame.display.update()
+        clock.tick(10)
