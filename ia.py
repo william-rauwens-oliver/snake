@@ -18,19 +18,21 @@ class Node:
         return hash((self.position.x, self.position.y))
 
 class IA:
+
+# Initialise l'IA avec les directions possibles (droite, gauche, haut, bas)
     def __init__(self):
         self.directions = [Vector2(1, 0), Vector2(-1, 0), Vector2(0, 1), Vector2(0, -1)]
 
     def get_next_move(self, snake, fruit):
-        # Utiliser A* pour trouver le chemin le plus court vers la pomme
+# L'IA trouve le chemin le plus court vers la pomme
         path = self.find_path(snake.body[0], fruit.pos, snake.body)
         
-        # Choisir la prochaine direction en fonction du premier mouvement dans le chemin
+# L'IA choisi la prochaine direction en fonction du premier mouvement dans le chemin
         if path and len(path) > 1:
             next_direction = path[1] - path[0]
             return next_direction
 
-        # Si le chemin est vide ou n'a qu'un élément, choisir une direction aléatoire
+# Si le chemin est vide ou n'a qu'un élément, l'IA choisi une direction aléatoire
         return random.choice(self.directions)
 
     def find_path(self, start, goal, obstacles):
@@ -50,14 +52,16 @@ class IA:
                 while current_node:
                     path.append(current_node.position)
                     current_node = current_node.parent
-                return path[::-1]  # Inverser le chemin pour obtenir le bon ordre
+                return path[::-1]
 
+# Parcours les directions possibles pour les voisins du nœud actuel
             closed_set.add(current_node)
 
             for direction in self.directions:
                 neighbor_position = current_node.position + direction
                 neighbor_node = Node(neighbor_position, current_node)
 
+# Vérifie si le voisin est dans la grille et n'est pas un obstacle
                 if (
                     0 <= neighbor_position.x < 20
                     and 0 <= neighbor_position.y < 20
@@ -72,4 +76,5 @@ class IA:
                     if neighbor_node not in open_set:
                         heapq.heappush(open_set, neighbor_node)
 
+# Si la file de priorité est vide et l'objectif n'est pas atteint, retourne un chemin vide
         return []
